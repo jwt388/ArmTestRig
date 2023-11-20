@@ -4,23 +4,34 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.Encoder;
+import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 
 /** A robot arm subsystem that moves with a motion profile. */
 public class ArmSubsystem extends ProfiledPIDSubsystem {
-  private final PWMSparkMax m_motor = new PWMSparkMax(ArmConstants.kMotorPort);
+  private final CANSparkMax m_motor =
+  new CANSparkMax(ArmConstants.kMotorPort, MotorType.kBrushless);
+  private final RelativeEncoder m_encoder = m_motor.getEncoder();
+  
+/*   private final PWMSparkMax m_motor = new PWMSparkMax(ArmConstants.kMotorPort);
   private final Encoder m_encoder =
-      new Encoder(ArmConstants.kEncoderPorts[0], ArmConstants.kEncoderPorts[1]);
+      new Encoder(ArmConstants.kEncoderPorts[0], ArmConstants.kEncoderPorts[1]); */
   private final ArmFeedforward m_feedforward =
       new ArmFeedforward(
           ArmConstants.kSVolts, ArmConstants.kGVolts,
           ArmConstants.kVVoltSecondPerRad, ArmConstants.kAVoltSecondSquaredPerRad);
+  private final Spark blinkinSpark = new Spark(Constants.BLIKIN_SPARK_PORT);
+  private double blinkinVoltage = Constants.BLINKIN_DARK_GREEN;
 
   /** Create a new ArmSubsystem. */
   public ArmSubsystem() {
@@ -33,9 +44,26 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
                 ArmConstants.kMaxVelocityRadPerSecond,
                 ArmConstants.kMaxAccelerationRadPerSecSquared)),
         0);
-    m_encoder.setDistancePerPulse(ArmConstants.kEncoderDistancePerPulse);
+
+    m_encoder.setPositionConversionFactor(ArmConstants.kArmRadiansPerEncoderRotation);
+    m_encoder.setVelocityConversionFactor(ArmConstants.kRPMtoRadPerSec);
+    resetPosition();
+
+    m_motor.setIdleMode(IdleMode.kBrake);
+    m_motor.setVoltage(0.0);
+
+    blinkinSpark.set(blinkinVoltage);
+
     // Start arm at rest in neutral position
     setGoal(ArmConstants.kArmOffsetRads);
+  }
+
+  @Override
+  public void periodic() {
+
+    SmartDashboard.putNumber("Arm Position", getMeasurement());
+    SmartDashboard.putNumber("Arm Velocity", getVelocity());
+    
   }
 
   @Override
@@ -47,7 +75,22 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
   }
 
   @Override
+  // Arm position for PID measurement
   public double getMeasurement() {
-    return m_encoder.getDistance() + ArmConstants.kArmOffsetRads;
+    return m_encoder.getPosition() + ArmConstants.kArmOffsetRads;
+
   }
+
+  // Motor speed (Rad/sec)
+  public double getVelocity() {
+    return m_encoder.getVelocity();
+
+  }
+
+  // Reset the encoders to zero. Should only be used when arm is in neutral position.
+  public void resetPosition() {
+    // Arm position for PID measurement
+     m_encoder.setPosition(0) ;
+  
+    }
 }

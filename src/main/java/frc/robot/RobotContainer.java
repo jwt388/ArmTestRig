@@ -5,9 +5,9 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.ArmSubsystem;
-import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
  */
 public class RobotContainer {
   // The robot's subsystems
-  private final DriveSubsystem m_robotDrive = new DriveSubsystem();
   private final ArmSubsystem m_robotArm = new ArmSubsystem();
 
   // The driver's controller
@@ -32,17 +31,9 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
+    
+    SmartDashboard.putData(m_robotArm);
 
-    // Configure default commands
-    // Set the default drive command to split-stick arcade drive
-    m_robotDrive.setDefaultCommand(
-        // A split-stick arcade command, with forward/backward controlled by the left
-        // hand, and turning controlled by the right.
-        Commands.run(
-            () ->
-                m_robotDrive.arcadeDrive(
-                    -m_driverController.getLeftY(), -m_driverController.getRightX()),
-            m_robotDrive));
   }
 
   /**
@@ -52,20 +43,20 @@ public class RobotContainer {
    * JoystickButton}.
    */
   private void configureButtonBindings() {
-    // Move the arm to 2 radians above horizontal when the 'A' button is pressed.
+    // Move the arm to high position when the 'B' button is pressed.
     m_driverController
-        .a()
+        .b()
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  m_robotArm.setGoal(2);
+                  m_robotArm.setGoal(Constants.ArmConstants.kArmHighPosition);
                   m_robotArm.enable();
                 },
                 m_robotArm));
 
-    // Move the arm to neutral position when the 'B' button is pressed.
+    // Move the arm to neutral (low) position when the 'A' button is pressed.
     m_driverController
-        .b()
+        .a()
         .onTrue(
             Commands.runOnce(
                 () -> {
@@ -74,14 +65,22 @@ public class RobotContainer {
                 },
                 m_robotArm));
 
+    m_driverController
+          .povDown()
+          .onTrue(
+              Commands.runOnce(
+                () -> {
+                  m_robotArm.setGoal(0);
+                },
+                m_robotArm));
+
+    // Reset the encoders to zero when the 'X' button is pressed. 
+    //   Should only be used when are is in neutral position.
+    m_driverController.x().onTrue(Commands.runOnce(m_robotArm::resetPosition));
+
     // Disable the arm controller when Y is pressed.
     m_driverController.y().onTrue(Commands.runOnce(m_robotArm::disable));
 
-    // Drive at half speed when the bumper is held
-    m_driverController
-        .rightBumper()
-        .onTrue(Commands.runOnce(() -> m_robotDrive.setMaxOutput(0.5)))
-        .onFalse(Commands.runOnce(() -> m_robotDrive.setMaxOutput(1.0)));
   }
 
   /**

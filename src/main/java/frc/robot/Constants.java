@@ -13,24 +13,7 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final class DriveConstants {
-    public static final int kLeftMotor1Port = 0;
-    public static final int kLeftMotor2Port = 1;
-    public static final int kRightMotor1Port = 2;
-    public static final int kRightMotor2Port = 3;
-
-    public static final int[] kLeftEncoderPorts = new int[] {0, 1};
-    public static final int[] kRightEncoderPorts = new int[] {2, 3};
-    public static final boolean kLeftEncoderReversed = false;
-    public static final boolean kRightEncoderReversed = true;
-
-    public static final int kEncoderCPR = 1024;
-    public static final double kWheelDiameterInches = 6;
-    public static final double kEncoderDistancePerPulse =
-        // Assumes the encoders are directly mounted on the wheel shafts
-        (kWheelDiameterInches * Math.PI) / (double) kEncoderCPR;
-  }
-
+  
   public static final class ArmConstants {
     public static final int kMotorPort = 4;
 
@@ -47,11 +30,14 @@ public final class Constants {
 
     public static final int[] kEncoderPorts = new int[] {4, 5};
     public static final int kEncoderPPR = 256;
-    public static final double kEncoderDistancePerPulse = 2.0 * Math.PI / kEncoderPPR;
+    public static final double gearRatio = 1/100; // FIX FIX FIX
+    public static final double kArmRadiansPerEncoderRotation = 2.0 * Math.PI * gearRatio;
+    public static final double kRPMtoRadPerSec = kArmRadiansPerEncoderRotation / 60;
 
     // The offset of the arm from the horizontal in its neutral position,
     // measured from the horizontal
     public static final double kArmOffsetRads = 0.5;
+    public static final double kArmHighPosition = 2.0;
   }
 
   public static final class AutoConstants {
@@ -62,4 +48,9 @@ public final class Constants {
   public static final class OIConstants {
     public static final int kDriverControllerPort = 0;
   }
+
+  // RevRobotics Blinkin
+  public static final int BLIKIN_SPARK_PORT = 0;
+  public static final double BLINKIN_RED = 0.61;
+  public static final double BLINKIN_DARK_GREEN = 0.75;
 }
