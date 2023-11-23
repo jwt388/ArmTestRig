@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -17,16 +19,16 @@ public final class Constants {
   public static final class ArmConstants {
     public static final int kMotorPort = 4;
 
-    public static final double kP = 1;
+    public static final double kP = 5;
 
     // These are fake gains; in actuality these must be determined individually for each robot
-    public static final double kSVolts = 1;
-    public static final double kGVolts = 1;
-    public static final double kVVoltSecondPerRad = 0.5;
-    public static final double kAVoltSecondSquaredPerRad = 0.1;
+    public static final double kSVolts = 0.5;
+    public static final double kGVolts = 1.25;
+    public static final double kVVoltSecondPerRad = 0.025;
+    public static final double kAVoltSecondSquaredPerRad = 0.0;
 
-    public static final double kMaxVelocityRadPerSecond = 3;
-    public static final double kMaxAccelerationRadPerSecSquared = 10;
+    public static final double kMaxVelocityRadPerSecond = Units.degreesToRadians(90);
+    public static final double kMaxAccelerationRadPerSecSquared = Units.degreesToRadians(180);
 
     public static final int[] kEncoderPorts = new int[] {4, 5};
     public static final int kEncoderPPR = 256;
@@ -34,10 +36,12 @@ public final class Constants {
     public static final double kArmRadiansPerEncoderRotation = 2.0 * Math.PI * gearRatio;
     public static final double kRPMtoRadPerSec = kArmRadiansPerEncoderRotation / 60;
 
-    // The offset of the arm from the horizontal in its neutral position,
-    // measured from the horizontal
-    public static final double kArmOffsetRads = 0.5;
-    public static final double kArmHighPosition = 2.0;
+    // Arm positions.  Horizontal = 0 radians
+    public static final double kArmLowPositionRad = Units.degreesToRadians(-30);
+    public static final double kArmHighPositionRad = Units.degreesToRadians(75);
+    public static final double kPosIncrement = Units.degreesToRadians(5);
+    public static final double kminPosition = Units.degreesToRadians(-35);
+    public static final double kmaxPosition = Units.degreesToRadians(80);
   }
 
   public static final class AutoConstants {
@@ -53,4 +57,27 @@ public final class Constants {
   public static final int BLIKIN_SPARK_PORT = 0;
   public static final double BLINKIN_RED = 0.61;
   public static final double BLINKIN_DARK_GREEN = 0.75;
+
+  // ----------------------------------------------------------------------
+  // Constants for simulation from ArmSimulation example
+  public static final int kEncoderAChannel = 0; 
+  public static final int kEncoderBChannel = 1; 
+  public static final int kMotorPort = 0;
+
+  // The P gain for the PID controller that drives this arm.
+  public static final double kDefaultArmKp = 50.0;
+
+
+
+  // distance per pulse = (angle per revolution) / (pulses per revolution)
+  //  = (2 * PI rads) / (4096 pulses)
+  public static final double kArmEncoderDistPerPulse = 2.0 * Math.PI / 4096;
+
+  public static final double kArmReduction = 200;
+  public static final double kArmMass = 8.0; // Kilograms
+  public static final double kArmLength = Units.inchesToMeters(30);
+  public static final double kMinAngleRads = Units.degreesToRadians(-45);
+  public static final double kMaxAngleRads = Units.degreesToRadians(100);
+  public static final double kArmOffsetRads = kMinAngleRads;
+
 }

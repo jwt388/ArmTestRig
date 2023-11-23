@@ -1,13 +1,29 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "SPARK MAX [4]": {
+        "header": {
+          "open": true
+        }
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Arm Sim": "Mechanism2d",
       "/SmartDashboard/ArmSubsystem": "Subsystem"
     }
   },
   "NetworkTables": {
     "transitory": {
       "Shuffleboard": {
+        "open": true
+      },
+      "SmartDashboard": {
+        "ProfiledPIDController[1]": {
+          "open": true
+        },
         "open": true
       }
     }

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
@@ -43,43 +45,68 @@ public class RobotContainer {
    * JoystickButton}.
    */
   private void configureButtonBindings() {
+    // Move the arm to low position when the 'A' button is pressed.
+    m_driverController
+        .a()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  m_robotArm.setGoal(Constants.ArmConstants.kArmLowPositionRad);
+                  m_robotArm.enable();
+                },
+                m_robotArm));
+
     // Move the arm to high position when the 'B' button is pressed.
     m_driverController
         .b()
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  m_robotArm.setGoal(Constants.ArmConstants.kArmHighPosition);
+                  m_robotArm.setGoal(Constants.ArmConstants.kArmHighPositionRad);
                   m_robotArm.enable();
                 },
                 m_robotArm));
 
-    // Move the arm to neutral (low) position when the 'A' button is pressed.
+    // Move the arm to neutral (low) position when the 'y' button is pressed.
     m_driverController
-        .a()
+        .y()
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  m_robotArm.setGoal(Constants.ArmConstants.kArmOffsetRads);
+                  m_robotArm.setGoal(Constants.kArmOffsetRads);
                   m_robotArm.enable();
                 },
                 m_robotArm));
 
+    // Shift position dowm a small amount when the POV Down is pressed.
     m_driverController
-          .povDown()
-          .onTrue(
-              Commands.runOnce(
+        .povDown()
+        .onTrue(
+            Commands.runOnce(
                 () -> {
-                  m_robotArm.setGoal(0);
+                  m_robotArm.setGoal(m_robotArm.decreasedGoal());
+                  m_robotArm.enable();
+                },
+                m_robotArm));
+                
+    // Shift position up a small amount when the POV Down is pressed.
+    m_driverController
+        .povUp()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  m_robotArm.setGoal(m_robotArm.increasedGoal());
+                  m_robotArm.enable();
                 },
                 m_robotArm));
 
-    // Reset the encoders to zero when the 'X' button is pressed. 
-    //   Should only be used when are is in neutral position.
-    m_driverController.x().onTrue(Commands.runOnce(m_robotArm::resetPosition));
 
-    // Disable the arm controller when Y is pressed.
-    m_driverController.y().onTrue(Commands.runOnce(m_robotArm::disable));
+    // Reset the encoders to zero when the 'X' button is pressed. 
+    //   Should only be used when arm is in neutral position.
+    // m_driverController.x().onTrue(Commands.runOnce(m_robotArm::resetPosition));
+
+    // Disable the arm controller when X is pressed.
+    m_driverController.x().onTrue(Commands.runOnce(m_robotArm::disable));
 
   }
 
@@ -89,6 +116,8 @@ public class RobotContainer {
    */
   public void disablePIDSubsystems() {
     m_robotArm.disable();
+    DataLogManager.log("disablePIDSubsystems");
+
   }
 
   /**
