@@ -1,9 +1,6 @@
 {
   "NetworkTables": {
     "transitory": {
-      "Shuffleboard": {
-        "open": true
-      },
       "SmartDashboard": {
         "open": true
       }
@@ -14,6 +11,11 @@
       "/SmartDashboard/ArmSubsystem": "Subsystem"
     },
     "windows": {
+      "/FMSInfo": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Arm Sim": {
         "window": {
           "visible": true
@@ -35,6 +37,8 @@
             }
           ],
           "height": 203,
+          "legendHorizontal": true,
+          "legendOutside": true,
           "series": [
             {
               "color": [
@@ -43,7 +47,8 @@
                 0.6901960968971252,
                 1.0
               ],
-              "id": "NT:/SmartDashboard/feedforward"
+              "id": "NT:/SmartDashboard/feedforward",
+              "name": "feedforward"
             },
             {
               "color": [
@@ -52,7 +57,8 @@
                 0.32156863808631897,
                 1.0
               ],
-              "id": "NT:/SmartDashboard/output"
+              "id": "NT:/SmartDashboard/output",
+              "name": "PID Output"
             }
           ]
         }
@@ -62,6 +68,8 @@
       "plots": [
         {
           "height": 217,
+          "legendHorizontal": true,
+          "legendOutside": true,
           "series": [
             {
               "color": [
@@ -70,7 +78,8 @@
                 0.6901960968971252,
                 1.0
               ],
-              "id": "NT:/SmartDashboard/Arm Goal"
+              "id": "NT:/SmartDashboard/Arm Goal",
+              "name": "Arm Goal"
             },
             {
               "color": [
@@ -79,7 +88,8 @@
                 0.32156863808631897,
                 1.0
               ],
-              "id": "NT:/SmartDashboard/Measured Angle"
+              "id": "NT:/SmartDashboard/Measured Angle",
+              "name": "Measured Angle"
             },
             {
               "color": [
@@ -88,7 +98,8 @@
                 0.4078431725502014,
                 1.0
               ],
-              "id": "NT:/SmartDashboard/SetPt Pos"
+              "id": "NT:/SmartDashboard/SetPt Pos",
+              "name": "Set Pt Pos"
             }
           ]
         }

@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.Constants.ArmConstants;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -73,7 +74,7 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  m_robotArm.setGoal(Constants.kArmOffsetRads);
+                  m_robotArm.setGoal(ArmConstants.kArmOffsetRads);
                   m_robotArm.enable();
                 },
                 m_robotArm));

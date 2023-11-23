@@ -5,15 +5,21 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+
+import org.ejml.simple.SimpleMatrix;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import frc.robot.Constants;
@@ -71,12 +77,13 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
           Constants.kArmReduction,
           SingleJointedArmSim.estimateMOI(Constants.kArmLength, Constants.kArmMass),
           Constants.kArmLength,
-          Constants.kMinAngleRads,
-          Constants.kMaxAngleRads,
+          ArmConstants.kMinAngleRads,
+          ArmConstants.kMaxAngleRads,
           true,
           VecBuilder.fill(Constants.kArmEncoderDistPerPulse) // Add noise with a std-dev of 1 tick
           );
 
+  private Matrix<N2,N1> startState = new Matrix<>(new SimpleMatrix(2, 1));
   private final EncoderSim m_encoderSim = new EncoderSim(m_encoder);
 
   // Create a Mechanism2d display of an Arm with a fixed ArmTower and moving Arm.
@@ -115,11 +122,11 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
 
     //(sim) blinkinSpark.set(blinkinVoltage);
 
-    // Start arm at rest in low position
-    setGoal(ArmConstants.kArmLowPositionRad);
+    // Start arm in back rest position
+    setGoal(ArmConstants.kArmOffsetRads);
+    simulationInit();
 
     setupShuffleboard();
-    DataLogManager.log("Arm Subsystem Constructor");
 
     // Put Mechanism 2d to SmartDashboard
     SmartDashboard.putData("Arm Sim", m_mech2d);
@@ -136,6 +143,13 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
 
   }
 
+  public void simulationInit() {
+    startState.set(0, 0, ArmConstants.kArmOffsetRads);
+    startState.set(1, 0, 0);
+    m_armSim.setState(startState);
+    DataLogManager.log("Arm Initialized to : " + m_armSim.getAngleRads());
+  }
+
   /** Update the simulation model. */
   public void simulationPeriodic() {
     // In this method, we update our simulation of what our arm is doing
@@ -146,7 +160,7 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
     m_armSim.update(0.020);
 
     // Finally, we set our simulated encoder's readings and simulated battery voltage
-    m_encoderSim.setDistance((m_armSim.getAngleRads() - Constants.kArmOffsetRads)*Constants.kArmReduction);
+    m_encoderSim.setDistance((m_armSim.getAngleRads() - ArmConstants.kArmOffsetRads)*Constants.kArmReduction);
     // SimBattery estimates loaded battery voltages
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(m_armSim.getCurrentDrawAmps()));
@@ -181,7 +195,7 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
   // Arm position for PID measurement
   public double getMeasurement() {
     // return m_encoder.getPosition() + ArmConstants.kArmOffsetRads; // Add ofset for starting zero point
-    return m_encoder.getDistance()/Constants.kArmReduction + Constants.kArmOffsetRads; // Add ofset for starting zero point
+    return m_encoder.getDistance()/Constants.kArmReduction + ArmConstants.kArmOffsetRads; // Add ofset for starting zero point
 
   }
 
@@ -206,13 +220,13 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
    // Calculate increased  goal limited to allowed range
    public double increasedGoal() {
     double newGoal = m_controller.getGoal().position + Constants.ArmConstants.kPosIncrement;
-    return MathUtil.clamp(newGoal, Constants.ArmConstants.kminPosition, Constants.ArmConstants.kmaxPosition);
+    return MathUtil.clamp(newGoal, Constants.ArmConstants.kMinAngleRads, Constants.ArmConstants.kMaxAngleRads);
   }
 
   // Calculate decreased  goal limited to allowed range
   public double decreasedGoal() {
     double newGoal =  m_controller.getGoal().position - Constants.ArmConstants.kPosIncrement;
-    return MathUtil.clamp(newGoal, Constants.ArmConstants.kminPosition, Constants.ArmConstants.kmaxPosition);
+    return MathUtil.clamp(newGoal, Constants.ArmConstants.kMinAngleRads, Constants.ArmConstants.kMaxAngleRads);
 
   } 
   @Override
@@ -220,7 +234,7 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
   public void enable() {
 
     // Don't enable if already enabled since this may cause control transients
-    if (!m_enabled) {
+    if (!m_enabled | Constants.allowReenable) {
       m_enabled = true;
       m_controller.reset(getMeasurement());
       DataLogManager.log("Arm Enabled");

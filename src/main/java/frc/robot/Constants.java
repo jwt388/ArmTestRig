@@ -37,11 +37,12 @@ public final class Constants {
     public static final double kRPMtoRadPerSec = kArmRadiansPerEncoderRotation / 60;
 
     // Arm positions.  Horizontal = 0 radians
+    public static final double kMinAngleRads = Units.degreesToRadians(-45);
+    public static final double kMaxAngleRads = Units.degreesToRadians(120);
+    public static final double kArmOffsetRads = kMaxAngleRads;
     public static final double kArmLowPositionRad = Units.degreesToRadians(-30);
-    public static final double kArmHighPositionRad = Units.degreesToRadians(75);
-    public static final double kPosIncrement = Units.degreesToRadians(5);
-    public static final double kminPosition = Units.degreesToRadians(-35);
-    public static final double kmaxPosition = Units.degreesToRadians(80);
+    public static final double kArmHighPositionRad = Units.degreesToRadians(45);
+    public static final double kPosIncrement = Units.degreesToRadians(2);
   }
 
   public static final class AutoConstants {
@@ -76,8 +77,10 @@ public final class Constants {
   public static final double kArmReduction = 200;
   public static final double kArmMass = 8.0; // Kilograms
   public static final double kArmLength = Units.inchesToMeters(30);
-  public static final double kMinAngleRads = Units.degreesToRadians(-45);
-  public static final double kMaxAngleRads = Units.degreesToRadians(100);
-  public static final double kArmOffsetRads = kMinAngleRads;
+  public static final double kStartAngleRads = ArmConstants.kMinAngleRads;
+
+  // ----------------------------------------------------------------------
+  // Constants for debugging
+public static final boolean allowReenable = false;
 
 }
