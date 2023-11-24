@@ -66,7 +66,7 @@ public final class Constants {
   public static final int kMotorPort = 0;
 
   // The P gain for the PID controller that drives this arm.
-  public static final double kDefaultArmKp = 50.0;
+  // public static final double kDefaultArmKp = 50.0;
 
 
 
@@ -76,7 +76,10 @@ public final class Constants {
 
   public static final double kArmReduction = 200;
   public static final double kArmMass = 8.0; // Kilograms
-  public static final double kArmLength = Units.inchesToMeters(30);
+  public static final double kArmLengthInches = 30;
+  public static final double kArmExtendedLengthInches = 45;
+  public static final double kArmLength = Units.inchesToMeters(kArmLengthInches);
+  public static final double kArmExtendedLength = Units.inchesToMeters(kArmExtendedLengthInches);
   public static final double kStartAngleRads = ArmConstants.kMinAngleRads;
 
   // ----------------------------------------------------------------------

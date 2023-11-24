@@ -86,15 +86,15 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
   private final EncoderSim m_encoderSim = new EncoderSim(m_encoder2);
 
   // Create a Mechanism2d display of an Arm with a fixed ArmTower and moving Arm.
-  private final Mechanism2d m_mech2d = new Mechanism2d(60, 60);
-  private final MechanismRoot2d m_armPivot = m_mech2d.getRoot("ArmPivot", 30, 30);
+  private final Mechanism2d m_mech2d = new Mechanism2d(90, 60);
+  private final MechanismRoot2d m_armPivot = m_mech2d.getRoot("ArmPivot", 40, 30);
   private final MechanismLigament2d m_armTower =
       m_armPivot.append(new MechanismLigament2d("ArmTower", 30, -90));
   private final MechanismLigament2d m_arm =
       m_armPivot.append(
           new MechanismLigament2d(
               "Arm",
-              30,
+              Constants.kArmLengthInches,
               Units.radiansToDegrees(m_armSim.getAngleRads()),
               6,
               new Color8Bit(Color.kYellow)));
@@ -121,11 +121,14 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
 
     m_motor2.setVoltage(0.0); // for simulation
 
-    //(sim) blinkinSpark.set(blinkinVoltage);
+    //blinkinSpark.set(blinkinVoltage);
 
-    // Start arm in back rest position
+    // Assume the arm is starting in the back rest position
     setGoal(ArmConstants.kArmOffsetRads);
-    simulationInit();
+
+    if (RobotBase.isSimulation()) {
+      simulationInit();
+    }
 
     setupShuffleboard();
 
@@ -273,6 +276,17 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
     m_goalposition = goal;
 
   }
+
+  /** Extend the arm - only affects simulation display for now - no affect on MOI*/
+  public void extendArm() {
+    m_arm.setLength(Constants.kArmExtendedLengthInches);
+  }
+
+  /** Retract the arm - only affects simulation display for now - no affect on MOI*/
+  public void retractArm() {
+    m_arm.setLength(Constants.kArmLengthInches);
+  }
+
   private void setupShuffleboard() {
 
     SmartDashboard.putData(m_controller);
@@ -283,13 +297,19 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
 
     SmartDashboard.putBoolean("Arm Enabled", m_enabled);
     SmartDashboard.putNumber("Arm Goal", Units.radiansToDegrees(m_goalposition));
-    SmartDashboard.putNumber("Mechanical Angle", Units.radiansToDegrees(m_armSim.getAngleRads()));
     SmartDashboard.putNumber("Measured Angle", Units.radiansToDegrees(getMeasurement()));
     SmartDashboard.putNumber("Arm Velocity", Units.radiansToDegrees(getVelocity()));
     SmartDashboard.putNumber("Voltage", m_voltageCommand); 
-    // SmartDashboard.putNumber("Current", m_motor.getOutputCurrent()); 
     SmartDashboard.putNumber("Battery Voltage",RobotController.getBatteryVoltage());
-    SmartDashboard.putNumber("Sim Current", m_armSim.getCurrentDrawAmps());
+
+    if (RobotBase.isReal()) {
+      SmartDashboard.putNumber("Current", m_motor.getOutputCurrent()); 
+    }
+    else {
+      SmartDashboard.putNumber("Mechanical Angle", Units.radiansToDegrees(m_armSim.getAngleRads()));
+      SmartDashboard.putNumber("Sim Current", m_armSim.getCurrentDrawAmps());
+    }
+
   }
 
   // @Override

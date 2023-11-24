@@ -68,7 +68,7 @@ public class RobotContainer {
                 },
                 m_robotArm));
 
-    // Move the arm to neutral (low) position when the 'y' button is pressed.
+    // Move the arm to neutral (starting) position when the 'y' button is pressed.
     m_driverController
         .y()
         .onTrue(
@@ -108,6 +108,12 @@ public class RobotContainer {
 
     // Disable the arm controller when X is pressed.
     m_driverController.x().onTrue(Commands.runOnce(m_robotArm::disable));
+
+    // Extend the arm controller when right bumper is pressed.
+    m_driverController.rightBumper().onTrue(Commands.runOnce(m_robotArm::extendArm));
+
+    // Retract the arm controller when left bumper is pressed.
+    m_driverController.leftBumper().onTrue(Commands.runOnce(m_robotArm::retractArm));
 
   }
 
