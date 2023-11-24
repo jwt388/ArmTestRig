@@ -9,7 +9,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
-
 import org.ejml.simple.SimpleMatrix;
 
 import com.revrobotics.CANSparkMax;
@@ -25,11 +24,11 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
 import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 // added for simulation
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax; 
 import edu.wpi.first.wpilibj.simulation.BatterySim;
@@ -45,22 +44,22 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 
 /** A robot arm subsystem that moves with a motion profile. */
 public class ArmSubsystem extends ProfiledPIDSubsystem {
-  //(sim) private final CANSparkMax m_motor =
-  //(sim) new CANSparkMax(ArmConstants.kMotorPort, MotorType.kBrushless);
-  //(sim) private final RelativeEncoder m_encoder = m_motor.getEncoder();
+  private final CANSparkMax m_motor =
+  new CANSparkMax(ArmConstants.kMotorPort, MotorType.kBrushless);
+  private final RelativeEncoder m_encoder = m_motor.getEncoder();
   
-  private final PWMSparkMax m_motor = new PWMSparkMax(Constants.kMotorPort);
+  private final PWMSparkMax m_motor2 = new PWMSparkMax(Constants.kMotorPort); // for simulation
 
-  private final Encoder m_encoder =
-      new Encoder(Constants.kEncoderAChannel, Constants.kEncoderBChannel);
+  private final Encoder m_encoder2 =
+      new Encoder(Constants.kEncoderAChannel, Constants.kEncoderBChannel); // for simulation
 
   private final ArmFeedforward m_feedforward =
       new ArmFeedforward(
           ArmConstants.kSVolts, ArmConstants.kGVolts,
           ArmConstants.kVVoltSecondPerRad, ArmConstants.kAVoltSecondSquaredPerRad);
 
-  //(sim) private final Spark blinkinSpark = new Spark(Constants.BLIKIN_SPARK_PORT);
-  //(sim) private double blinkinVoltage = Constants.BLINKIN_DARK_GREEN;
+  //private final Spark blinkinSpark = new Spark(Constants.BLIKIN_SPARK_PORT);
+  //private double blinkinVoltage = Constants.BLINKIN_DARK_GREEN;
   
   private double m_voltageCommand = 0;
   private double m_goalposition;
@@ -84,7 +83,7 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
           );
 
   private Matrix<N2,N1> startState = new Matrix<>(new SimpleMatrix(2, 1));
-  private final EncoderSim m_encoderSim = new EncoderSim(m_encoder);
+  private final EncoderSim m_encoderSim = new EncoderSim(m_encoder2);
 
   // Create a Mechanism2d display of an Arm with a fixed ArmTower and moving Arm.
   private final Mechanism2d m_mech2d = new Mechanism2d(60, 60);
@@ -111,14 +110,16 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
           ArmConstants.kMaxAccelerationRadPerSecSquared)),
       0);
         
-    //(sim) m_encoder.setPositionConversionFactor(ArmConstants.kArmRadiansPerEncoderRotation);
-    //(sim) m_encoder.setVelocityConversionFactor(ArmConstants.kRPMtoRadPerSec);
-    m_encoder.setDistancePerPulse(Constants.kArmEncoderDistPerPulse);
+    m_encoder.setPositionConversionFactor(ArmConstants.kArmRadiansPerEncoderRotation);
+    m_encoder.setVelocityConversionFactor(ArmConstants.kRPMtoRadPerSec);
+    m_encoder2.setDistancePerPulse(Constants.kArmEncoderDistPerPulse);
 
     resetPosition();
 
-    // m_motor.setIdleMode(IdleMode.kBrake);
+    m_motor.setIdleMode(IdleMode.kBrake);
     m_motor.setVoltage(0.0);
+
+    m_motor2.setVoltage(0.0); // for simulation
 
     //(sim) blinkinSpark.set(blinkinVoltage);
 
@@ -147,14 +148,14 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
     startState.set(0, 0, ArmConstants.kArmOffsetRads);
     startState.set(1, 0, 0);
     m_armSim.setState(startState);
-    DataLogManager.log("Arm Initialized to : " + m_armSim.getAngleRads());
+    DataLogManager.log("Arm Initialized to : " + Units.radiansToDegrees(ArmConstants.kArmOffsetRads) + " Deg");
   }
 
   /** Update the simulation model. */
   public void simulationPeriodic() {
     // In this method, we update our simulation of what our arm is doing
     // First, we set our "inputs" (voltages)
-    m_armSim.setInput(m_motor.get() * RobotController.getBatteryVoltage());
+    m_armSim.setInput(m_motor2.get() * RobotController.getBatteryVoltage());
 
     // Next, we update it. The standard loop time is 20ms.
     m_armSim.update(0.020);
@@ -183,6 +184,7 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
       m_voltageCommand = 0;
     } 
     m_motor.setVoltage(m_voltageCommand);
+    m_motor2.setVoltage(m_voltageCommand); // for simulation
 
     SmartDashboard.putNumber("feedforward", feedforward);
     SmartDashboard.putNumber("output", output);
@@ -194,27 +196,35 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
   @Override
   // Arm position for PID measurement
   public double getMeasurement() {
-    // return m_encoder.getPosition() + ArmConstants.kArmOffsetRads; // Add ofset for starting zero point
-    return m_encoder.getDistance()/Constants.kArmReduction + ArmConstants.kArmOffsetRads; // Add ofset for starting zero point
+    if (RobotBase.isReal()) {
+      return m_encoder.getPosition() + ArmConstants.kArmOffsetRads; // Add ofset for starting zero point
+    }
+    else {
+      return m_encoder2.getDistance()/Constants.kArmReduction + ArmConstants.kArmOffsetRads; // Add ofset for starting zero point
+    }
 
   }
 
   // Motor speed (Rad/sec)
   public double getVelocity() {
-    // return m_encoder.getVelocity();
-    return m_encoder.getRate();
-
+    if (RobotBase.isReal()) {
+      return m_encoder.getVelocity();
+    }
+    else {
+      return m_encoder2.getRate();
+    }
 
   }
 
   // Reset the encoders to zero. Should only be used when arm is in neutral position.
   public void resetPosition() {
     // Arm position for PID measurement
-    //  m_encoder.setPosition(0) ;
-     m_encoder.reset();
-     DataLogManager.log("Encoder Reset" + m_encoder.getDistance());
-     DataLogManager.log("Measurement" + Units.radiansToDegrees(getMeasurement()));
-
+     if (RobotBase.isReal()) {
+      m_encoder.setPosition(0) ;
+    }
+    else {
+      m_encoder2.reset();
+    }
   }
 
    // Calculate increased  goal limited to allowed range
