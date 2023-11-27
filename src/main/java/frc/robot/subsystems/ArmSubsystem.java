@@ -61,8 +61,9 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
   //private final Spark blinkinSpark = new Spark(Constants.BLIKIN_SPARK_PORT);
   //private double blinkinVoltage = Constants.BLINKIN_DARK_GREEN;
   
-  private double m_voltageCommand = 0;
+  private double m_voltageCommand = 0.0;
   private double m_goalposition;
+  private double lastPosition = 0.0;
 
   // The arm gearbox represents a gearbox containing two Vex 775pro motors.
   private final DCMotor m_armGearbox = DCMotor.getVex775Pro(2);
@@ -86,8 +87,8 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
   private final EncoderSim m_encoderSim = new EncoderSim(m_encoder2);
 
   // Create a Mechanism2d display of an Arm with a fixed ArmTower and moving Arm.
-  private final Mechanism2d m_mech2d = new Mechanism2d(90, 60);
-  private final MechanismRoot2d m_armPivot = m_mech2d.getRoot("ArmPivot", 40, 30);
+  private final Mechanism2d m_mech2d = new Mechanism2d(70, 60);
+  private final MechanismRoot2d m_armPivot = m_mech2d.getRoot("ArmPivot", 25, 30);
   private final MechanismLigament2d m_armTower =
       m_armPivot.append(new MechanismLigament2d("ArmTower", 30, -90));
   private final MechanismLigament2d m_arm =
@@ -164,7 +165,11 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
     m_armSim.update(0.020);
 
     // Finally, we set our simulated encoder's readings and simulated battery voltage
-    m_encoderSim.setDistance((m_armSim.getAngleRads() - ArmConstants.kArmOffsetRads)*Constants.kArmReduction);
+    double newPosition = m_armSim.getAngleRads() - ArmConstants.kArmOffsetRads;
+    m_encoderSim.setDistance(newPosition);
+    m_encoderSim.setRate((newPosition-lastPosition)/0.02);
+    lastPosition = newPosition;
+
     // SimBattery estimates loaded battery voltages
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(m_armSim.getCurrentDrawAmps()));
@@ -200,10 +205,10 @@ public class ArmSubsystem extends ProfiledPIDSubsystem {
   // Arm position for PID measurement
   public double getMeasurement() {
     if (RobotBase.isReal()) {
-      return m_encoder.getPosition() + ArmConstants.kArmOffsetRads; // Add ofset for starting zero point
+      return m_encoder.getPosition() + ArmConstants.kArmOffsetRads; // Add offset for starting zero point
     }
     else {
-      return m_encoder2.getDistance()/Constants.kArmReduction + ArmConstants.kArmOffsetRads; // Add ofset for starting zero point
+      return m_encoder2.getDistance() + ArmConstants.kArmOffsetRads; // Add offset for starting zero point
     }
 
   }

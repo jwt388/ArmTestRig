@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
+import frc.robot.commands.ArmDPadUpCommand;
+import frc.robot.commands.ArmScoreHighCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.Constants.ArmConstants;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -79,7 +81,7 @@ public class RobotContainer {
                 },
                 m_robotArm));
 
-    // Shift position dowm a small amount when the POV Down is pressed.
+    // Shift position down a small amount when the POV Down is pressed.
     m_driverController
         .povDown()
         .onTrue(
@@ -90,6 +92,11 @@ public class RobotContainer {
                 },
                 m_robotArm));
                 
+     // Alternate way to trigger score high position via a command
+     m_driverController
+     .back()
+     .onTrue(new ArmScoreHighCommand(m_robotArm));
+
     // Shift position up a small amount when the POV Down is pressed.
     m_driverController
         .povUp()

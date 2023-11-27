@@ -23,7 +23,7 @@ public final class Constants {
 
     // These are fake gains; in actuality these must be determined individually for each robot
     public static final double kSVolts = 0.5;
-    public static final double kGVolts = 1.25;
+    public static final double kGVolts = 1.25; // was 1.25
     public static final double kVVoltSecondPerRad = 0.025;
     public static final double kAVoltSecondSquaredPerRad = 0.0;
 
@@ -72,7 +72,7 @@ public final class Constants {
 
   // distance per pulse = (angle per revolution) / (pulses per revolution)
   //  = (2 * PI rads) / (4096 pulses)
-  public static final double kArmEncoderDistPerPulse = 2.0 * Math.PI / 4096;
+  public static final double kMotorEncoderDistPerPulse = 2.0 * Math.PI / 4096;
 
   public static final double kArmReduction = 200;
   public static final double kArmMass = 8.0; // Kilograms
@@ -81,6 +81,8 @@ public final class Constants {
   public static final double kArmLength = Units.inchesToMeters(kArmLengthInches);
   public static final double kArmExtendedLength = Units.inchesToMeters(kArmExtendedLengthInches);
   public static final double kStartAngleRads = ArmConstants.kMinAngleRads;
+  public static final double kArmEncoderDistPerPulse = kMotorEncoderDistPerPulse / kArmReduction;
+
 
   // ----------------------------------------------------------------------
   // Constants for debugging
