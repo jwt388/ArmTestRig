@@ -19,20 +19,20 @@ public final class Constants {
   public static final class ArmConstants {
     public static final int kMotorPort = 4;
 
-    public static final double kP = 5;
+    public static final double kP = 3; // was 5
 
     // These are fake gains; in actuality these must be determined individually for each robot
     public static final double kSVolts = 0.5;
-    public static final double kGVolts = 1.25; // was 1.25
-    public static final double kVVoltSecondPerRad = 0.025;
-    public static final double kAVoltSecondSquaredPerRad = 0.0;
+    public static final double kGVolts = 1.25;
+    public static final double kVVoltSecondPerRad = 0.8;
+    public static final double kAVoltSecondSquaredPerRad = 0.05;
 
     public static final double kMaxVelocityRadPerSecond = Units.degreesToRadians(90);
-    public static final double kMaxAccelerationRadPerSecSquared = Units.degreesToRadians(180);
+    public static final double kMaxAccelerationRadPerSecSquared = Units.degreesToRadians(360);
 
     public static final int[] kEncoderPorts = new int[] {4, 5};
     public static final int kEncoderPPR = 256;
-    public static final double gearRatio = 1/100; // FIX FIX FIX
+    public static final double gearRatio = 1/100;
     public static final double kArmRadiansPerEncoderRotation = 2.0 * Math.PI * gearRatio;
     public static final double kRPMtoRadPerSec = kArmRadiansPerEncoderRotation / 60;
 
@@ -64,11 +64,6 @@ public final class Constants {
   public static final int kEncoderAChannel = 0; 
   public static final int kEncoderBChannel = 1; 
   public static final int kMotorPort = 0;
-
-  // The P gain for the PID controller that drives this arm.
-  // public static final double kDefaultArmKp = 50.0;
-
-
 
   // distance per pulse = (angle per revolution) / (pulses per revolution)
   //  = (2 * PI rads) / (4096 pulses)
